@@ -32,6 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnAddCustomCat = document.getElementById("btn-add-custom-cat");
     const customCategoriesContainer = document.getElementById("custom-categories-container");
 
+    const customEisCategoryInput = document.getElementById("custom-eis-category-input");
+    const btnAddCustomEisCat = document.getElementById("btn-add-custom-eis-cat");
+    const customEisCategoriesContainer = document.getElementById("custom-eis-categories-container");
+    const eisStrictKeywords = document.getElementById("eis-strict-keywords");
+
     // KPI count placeholders
     const statTotal = document.getElementById("stat-total");
     const statNew = document.getElementById("stat-new");
@@ -442,6 +447,33 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Custom EIS category codes list
+    let customEisCategories = [];
+
+    function renderCustomEisCategories() {
+        customEisCategoriesContainer.innerHTML = "";
+        customEisCategories.forEach(code => {
+            const pill = document.createElement("div");
+            pill.className = "flex items-center gap-1.5 bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full border border-slate-700/50";
+            
+            const span = document.createElement("span");
+            span.textContent = code;
+            
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "text-slate-500 hover:text-red-400 transition-colors ml-1";
+            removeBtn.innerHTML = '<i class="fa-solid fa-xmark text-2xs"></i>';
+            removeBtn.addEventListener("click", () => {
+                customEisCategories = customEisCategories.filter(c => c !== code);
+                renderCustomEisCategories();
+            });
+            
+            pill.appendChild(span);
+            pill.appendChild(removeBtn);
+            customEisCategoriesContainer.appendChild(pill);
+        });
+    }
+
     // Settings Modal Event Listeners
     btnSettings.addEventListener("click", async () => {
         const data = await fetchSettings();
@@ -450,7 +482,11 @@ document.addEventListener("DOMContentLoaded", () => {
             const checkboxes = document.querySelectorAll("input[name='category-checkbox']");
             checkboxes.forEach(cb => cb.checked = false);
 
+            const eisCheckboxes = document.querySelectorAll("input[name='eis-category-checkbox']");
+            eisCheckboxes.forEach(cb => cb.checked = false);
+
             customCategories = [];
+            customEisCategories = [];
 
             // 2. Populate checkboxes & custom category pills
             data.categories.forEach(code => {
@@ -462,11 +498,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            renderCustomCategories();
+            data.eis_okpd2_codes.forEach(code => {
+                const cb = [...eisCheckboxes].find(c => c.value === code);
+                if (cb) {
+                    cb.checked = true;
+                } else {
+                    customEisCategories.push(code);
+                }
+            });
 
-            // 3. Populate textareas
+            renderCustomCategories();
+            renderCustomEisCategories();
+
+            // 3. Populate textareas and checkboxes
             settingsKeywords.value = data.keywords.join(", ");
             settingsMinusWords.value = data.minus_words.join(", ");
+            eisStrictKeywords.checked = data.eis_strict_keywords;
             settingsModal.classList.remove("hidden");
         } else {
             showToast("Не удалось загрузить настройки");
@@ -490,6 +537,22 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Handle adding custom EIS OKPD2 category code
+    btnAddCustomEisCat.addEventListener("click", () => {
+        const code = customEisCategoryInput.value.trim();
+        if (code) {
+            const checkboxes = document.querySelectorAll("input[name='eis-category-checkbox']");
+            const cb = [...checkboxes].find(c => c.value === code);
+            if (cb) {
+                cb.checked = true;
+            } else if (!customEisCategories.includes(code)) {
+                customEisCategories.push(code);
+                renderCustomEisCategories();
+            }
+            customEisCategoryInput.value = "";
+        }
+    });
+
     const hideSettings = () => settingsModal.classList.add("hidden");
     btnCloseSettings.addEventListener("click", hideSettings);
     btnCancelSettings.addEventListener("click", hideSettings);
@@ -500,9 +563,14 @@ document.addEventListener("DOMContentLoaded", () => {
         // Gather standard checked categories
         const checkboxes = document.querySelectorAll("input[name='category-checkbox']:checked");
         const standardCats = [...checkboxes].map(cb => cb.value);
-
-        // Combine standard and custom categories
         const categories = [...standardCats, ...customCategories];
+
+        // Gather EIS checked categories
+        const eisCheckboxes = document.querySelectorAll("input[name='eis-category-checkbox']:checked");
+        const standardEisCats = [...eisCheckboxes].map(cb => cb.value);
+        const eis_okpd2_codes = [...standardEisCats, ...customEisCategories];
+
+        const eis_strict_keywords = eisStrictKeywords.checked;
 
         const keywords = settingsKeywords.value.split(",").map(x => x.trim()).filter(Boolean);
         const minus_words = settingsMinusWords.value.split(",").map(x => x.trim()).filter(Boolean);
@@ -515,7 +583,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = await fetch("/api/settings", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ categories, keywords, minus_words })
+                body: JSON.stringify({ 
+                    categories, 
+                    keywords, 
+                    minus_words,
+                    eis_okpd2_codes,
+                    eis_strict_keywords
+                })
             });
 
             if (!res.ok) throw new Error("Failed to save settings");

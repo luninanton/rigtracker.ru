@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from backend.app.models.tender import Tender
 from backend.app.services.filter_service import classify_and_filter_tender, calculate_scout_score
 from backend.app.services.telegram_service import send_tender_notification
-from backend.app.services.setting_service import get_setting_list
+from backend.app.services.setting_service import get_setting_list, get_setting_bool
 from config import settings
 
 async def run_scraper_and_save(parser, db: Session) -> int:
@@ -21,6 +21,10 @@ async def run_scraper_and_save(parser, db: Session) -> int:
     if hasattr(parser, "keywords"):
         parser.keywords = keywords
 
+    # 3. Load dynamic EIS settings
+    eis_okpd2_codes = get_setting_list(db, "eis_okpd2_codes", settings.EIS_OKPD2_CODES)
+    eis_strict_keywords = get_setting_bool(db, "eis_strict_keywords", settings.EIS_STRICT_KEYWORDS)
+
     raw_lots = await parser.parse()
     new_items_count = 0
     new_tenders_to_notify = []
@@ -38,6 +42,30 @@ async def run_scraper_and_save(parser, db: Session) -> int:
             keywords=keywords,
             minus_words=minus_words
         )
+        
+        # Apply ЕИС Закупки specific filters if applicable
+        is_eis = parser.source_name == "ЕИС Закупки" or lot.get("source_platform", "").startswith("ЕИС Закупки")
+        if is_eis:
+            # 1. Strict keywords filter
+            if eis_strict_keywords and not machinery_type:
+                continue
+            
+            # 2. OKPD2 filter (if codes are configured)
+            if eis_okpd2_codes:
+                ikz = lot.get("ikz")
+                if ikz:
+                    if len(ikz) >= 33:
+                        lot_okpd2_digits = ikz[29:33]
+                        matched_okpd2 = False
+                        for code in eis_okpd2_codes:
+                            clean_code = code.replace(".", "").strip()
+                            if clean_code and lot_okpd2_digits.startswith(clean_code):
+                                matched_okpd2 = True
+                                break
+                        if not matched_okpd2:
+                            continue
+                    else:
+                        continue
         
         # Calculate scout score
         scout_score = calculate_scout_score(lot["price_start"], lot["price_current"])

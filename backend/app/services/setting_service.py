@@ -34,3 +34,30 @@ def set_setting_list(db: Session, key: str, value: List[str]):
     else:
         setting.value = json_val
     db.commit()
+
+def get_setting_bool(db: Session, key: str, default: bool) -> bool:
+    """
+    Retrieves a boolean setting from the database. Falls back to default if not found or invalid.
+    """
+    try:
+        setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+        if not setting:
+            return default
+        return setting.value.lower() == "true"
+    except Exception as e:
+        logger.warning(f"Failed to load boolean setting for {key}: {e}. Falling back to default.")
+        return default
+
+def set_setting_bool(db: Session, key: str, value: bool):
+    """
+    Saves a boolean value in the database.
+    """
+    str_val = "true" if value else "false"
+    setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+    if not setting:
+        setting = SystemSetting(key=key, value=str_val)
+        db.add(setting)
+    else:
+        setting.value = str_val
+    db.commit()
+

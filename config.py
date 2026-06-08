@@ -27,6 +27,11 @@ class Settings(BaseSettings):
         "100001", "100002", "101", "110", "100000"
     ]
 
+    # EIS Zakupki OKPD2 codes to parse (default includes construction/mining machinery and motor vehicles)
+    EIS_OKPD2_CODES: List[str] = ["28.92", "29.10"]
+    EIS_STRICT_KEYWORDS: bool = True
+
+
     # Basic Authentication Settings
     BASIC_AUTH_USERNAME: str = "admin"
     BASIC_AUTH_PASSWORD: str = "scout_admin_pass"
