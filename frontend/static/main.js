@@ -489,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
             customEisCategories = [];
 
             // 2. Populate checkboxes & custom category pills
-            data.categories.forEach(code => {
+            (data.categories || []).forEach(code => {
                 const cb = [...checkboxes].find(c => c.value === code);
                 if (cb) {
                     cb.checked = true;
@@ -498,7 +498,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
 
-            data.eis_okpd2_codes.forEach(code => {
+            (data.eis_okpd2_codes || []).forEach(code => {
                 const cb = [...eisCheckboxes].find(c => c.value === code);
                 if (cb) {
                     cb.checked = true;
@@ -511,9 +511,11 @@ document.addEventListener("DOMContentLoaded", () => {
             renderCustomEisCategories();
 
             // 3. Populate textareas and checkboxes
-            settingsKeywords.value = data.keywords.join(", ");
-            settingsMinusWords.value = data.minus_words.join(", ");
-            eisStrictKeywords.checked = data.eis_strict_keywords;
+            settingsKeywords.value = (data.keywords || []).join(", ");
+            settingsMinusWords.value = (data.minus_words || []).join(", ");
+            if (eisStrictKeywords) {
+                eisStrictKeywords.checked = !!data.eis_strict_keywords;
+            }
             settingsModal.classList.remove("hidden");
         } else {
             showToast("Не удалось загрузить настройки");
