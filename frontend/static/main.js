@@ -25,9 +25,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnCancelSettings = document.getElementById("btn-cancel-settings");
     const settingsForm = document.getElementById("settings-form");
     
-    const settingsCategories = document.getElementById("settings-categories");
     const settingsKeywords = document.getElementById("settings-keywords");
     const settingsMinusWords = document.getElementById("settings-minus-words");
+    const customCategoryInput = document.getElementById("custom-category-input");
+    const btnAddCustomCat = document.getElementById("btn-add-custom-cat");
+    const customCategoriesContainer = document.getElementById("custom-categories-container");
 
     // KPI count placeholders
     const statTotal = document.getElementById("stat-total");
@@ -400,16 +402,78 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Custom category codes list
+    let customCategories = [];
+
+    function renderCustomCategories() {
+        customCategoriesContainer.innerHTML = "";
+        customCategories.forEach(code => {
+            const pill = document.createElement("div");
+            pill.className = "flex items-center gap-1.5 bg-slate-800 text-slate-300 text-xs px-2.5 py-1 rounded-full border border-slate-700/50";
+            
+            const span = document.createElement("span");
+            span.textContent = code;
+            
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.className = "text-slate-500 hover:text-red-400 transition-colors ml-1";
+            removeBtn.innerHTML = '<i class="fa-solid fa-xmark text-2xs"></i>';
+            removeBtn.addEventListener("click", () => {
+                customCategories = customCategories.filter(c => c !== code);
+                renderCustomCategories();
+            });
+            
+            pill.appendChild(span);
+            pill.appendChild(removeBtn);
+            customCategoriesContainer.appendChild(pill);
+        });
+    }
+
     // Settings Modal Event Listeners
     btnSettings.addEventListener("click", async () => {
         const data = await fetchSettings();
         if (data) {
-            settingsCategories.value = data.categories.join(", ");
+            // 1. Reset checkboxes
+            const checkboxes = document.querySelectorAll("input[name='category-checkbox']");
+            checkboxes.forEach(cb => cb.checked = false);
+
+            customCategories = [];
+
+            // 2. Populate checkboxes & custom category pills
+            data.categories.forEach(code => {
+                const cb = [...checkboxes].find(c => c.value === code);
+                if (cb) {
+                    cb.checked = true;
+                } else {
+                    customCategories.push(code);
+                }
+            });
+
+            renderCustomCategories();
+
+            // 3. Populate textareas
             settingsKeywords.value = data.keywords.join(", ");
             settingsMinusWords.value = data.minus_words.join(", ");
             settingsModal.classList.remove("hidden");
         } else {
             showToast("Не удалось загрузить настройки");
+        }
+    });
+
+    // Handle adding custom category code
+    btnAddCustomCat.addEventListener("click", () => {
+        const code = customCategoryInput.value.trim();
+        if (code) {
+            // If it matches standard categories, check it instead of making a pill
+            const checkboxes = document.querySelectorAll("input[name='category-checkbox']");
+            const cb = [...checkboxes].find(c => c.value === code);
+            if (cb) {
+                cb.checked = true;
+            } else if (!customCategories.includes(code)) {
+                customCategories.push(code);
+                renderCustomCategories();
+            }
+            customCategoryInput.value = "";
         }
     });
 
@@ -420,7 +484,13 @@ document.addEventListener("DOMContentLoaded", () => {
     settingsForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         
-        const categories = settingsCategories.value.split(",").map(x => x.trim()).filter(Boolean);
+        // Gather standard checked categories
+        const checkboxes = document.querySelectorAll("input[name='category-checkbox']:checked");
+        const standardCats = [...checkboxes].map(cb => cb.value);
+
+        // Combine standard and custom categories
+        const categories = [...standardCats, ...customCategories];
+
         const keywords = settingsKeywords.value.split(",").map(x => x.trim()).filter(Boolean);
         const minus_words = settingsMinusWords.value.split(",").map(x => x.trim()).filter(Boolean);
 
