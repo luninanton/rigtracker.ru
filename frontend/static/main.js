@@ -6,7 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
         searchQuery: "",
         selectedType: "",
         selectedPlatform: "",
-        keywords: []
+        keywords: [],
+        platforms: []
     };
 
     // DOM Elements
@@ -103,6 +104,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     </td>
                 </tr>
             `;
+        }
+    }
+
+    async function fetchPlatforms() {
+        try {
+            const res = await fetch("/api/tenders/platforms");
+            if (!res.ok) throw new Error("Failed to load platforms");
+            state.platforms = await res.json();
+            populateFilterPlatform();
+        } catch (error) {
+            console.error(error);
         }
     }
 
@@ -342,7 +354,8 @@ document.addEventListener("DOMContentLoaded", () => {
             
             showToast(`Парсинг успешно завершен! Добавлено новых лотов: ${added}`);
             
-            // Reload all tenders
+            // Reload platforms and all tenders
+            await fetchPlatforms();
             await fetchTenders();
 
         } catch (err) {
@@ -357,7 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Populate Platform Dropdown dynamically
     function populateFilterPlatform() {
-        const platforms = [...new Set(state.tenders.map(t => t.source_platform))].filter(Boolean);
+        const platforms = state.platforms || [];
         filterPlatform.innerHTML = '<option value="">Все площадки</option>';
         platforms.forEach(plat => {
             const opt = document.createElement("option");
@@ -368,7 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.selectedPlatform && platforms.includes(state.selectedPlatform)) {
             filterPlatform.value = state.selectedPlatform;
         } else {
-            state.selectedPlatform = "";
+            filterPlatform.value = "";
         }
     }
 
@@ -523,5 +536,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial load
     fetchSettings();
+    fetchPlatforms();
     fetchTenders();
 });

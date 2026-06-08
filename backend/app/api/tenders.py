@@ -66,6 +66,14 @@ def get_tenders(
     # Order by newest found, and by scout_score
     return query.order_by(Tender.created_at.desc()).offset(offset).limit(limit).all()
 
+@router.get("/platforms", response_model=List[str])
+def get_platforms(db: Session = Depends(get_db)):
+    """
+    Get list of all unique source platforms present in the database.
+    """
+    platforms = db.query(Tender.source_platform).distinct().all()
+    return sorted([p[0] for p in platforms if p[0]])
+
 @router.patch("/{tender_id}/status", response_model=TenderResponse)
 def update_tender_status(
     tender_id: int,
