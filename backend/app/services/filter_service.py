@@ -1,8 +1,14 @@
 import re
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from config import settings
 
-def classify_and_filter_tender(title: str, description: str) -> Tuple[Optional[str], str]:
+
+def classify_and_filter_tender(
+    title: str, 
+    description: str,
+    keywords: Optional[List[str]] = None,
+    minus_words: Optional[List[str]] = None
+) -> Tuple[Optional[str], str]:
     """
     Analyzes title and description.
     Returns: (machinery_type, status)
@@ -11,18 +17,20 @@ def classify_and_filter_tender(title: str, description: str) -> Tuple[Optional[s
     """
     text_to_check = f"{title or ''} {description or ''}"
     
+    kw_list = keywords if keywords is not None else settings.KEYWORDS
+    mw_list = minus_words if minus_words is not None else settings.MINUS_WORDS
+    
     # 1. Check minus words (case-insensitive)
-    for minus_word in settings.MINUS_WORDS:
-        # Using word boundaries or simple substring search
-        if re.search(r'\b' + re.escape(minus_word) + r'\b', text_to_check, re.IGNORECASE):
+    for minus_word in mw_list:
+        if re.search(r'\b' + re.escape(minus_word.strip()) + r'\b', text_to_check, re.IGNORECASE):
             return None, "Архив"
             
     # 2. Check keywords (case-insensitive) to identify machinery type
     machinery_type = None
-    for keyword in settings.KEYWORDS:
-        if re.search(r'\b' + re.escape(keyword) + r'\b', text_to_check, re.IGNORECASE):
+    for keyword in kw_list:
+        if re.search(r'\b' + re.escape(keyword.strip()) + r'\b', text_to_check, re.IGNORECASE):
             # Keep capitalized keyword as standard type
-            machinery_type = keyword
+            machinery_type = keyword.strip()
             break
             
     return machinery_type, "Новый"

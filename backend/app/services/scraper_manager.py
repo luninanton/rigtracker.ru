@@ -2,12 +2,23 @@ from sqlalchemy.orm import Session
 from backend.app.models.tender import Tender
 from backend.app.services.filter_service import classify_and_filter_tender, calculate_scout_score
 from backend.app.services.telegram_service import send_tender_notification
+from backend.app.services.setting_service import get_setting_list
+from config import settings
 
 async def run_scraper_and_save(parser, db: Session) -> int:
     """
     Runs a parser, filters/scores the items, checks for duplicates by URL, and saves to DB.
     Also triggers Telegram notifications for newly discovered tenders with status "Новый".
     """
+    # 1. Load dynamic categories and apply to parser if applicable
+    categories = get_setting_list(db, "torgi_gov_categories", settings.TORGI_GOV_CATEGORIES)
+    if hasattr(parser, "categories"):
+        parser.categories = categories
+
+    # 2. Load dynamic keywords and minus words
+    keywords = get_setting_list(db, "keywords", settings.KEYWORDS)
+    minus_words = get_setting_list(db, "minus_words", settings.MINUS_WORDS)
+
     raw_lots = await parser.parse()
     new_items_count = 0
     new_tenders_to_notify = []
@@ -18,8 +29,13 @@ async def run_scraper_and_save(parser, db: Session) -> int:
         if existing:
             continue
             
-        # Classify and filter
-        machinery_type, status = classify_and_filter_tender(lot["title"], lot["description"])
+        # Classify and filter using dynamic keywords/minus words
+        machinery_type, status = classify_and_filter_tender(
+            lot["title"], 
+            lot["description"],
+            keywords=keywords,
+            minus_words=minus_words
+        )
         
         # Calculate scout score
         scout_score = calculate_scout_score(lot["price_start"], lot["price_current"])

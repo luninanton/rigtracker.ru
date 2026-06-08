@@ -13,13 +13,14 @@ class TorgiGovParser(BaseParser):
             source_name="Torgi.gov.ru",
             base_url="https://torgi.gov.ru"
         )
+        self.categories = None
 
     async def parse(self) -> List[Dict[str, Any]]:
         # Torgi.gov.ru Public API search endpoint
         api_url = f"{self.base_url}/new/api/public/lotcards/search"
         
         # We query the configured categories:
-        categories = settings.TORGI_GOV_CATEGORIES
+        categories = self.categories if self.categories is not None else settings.TORGI_GOV_CATEGORIES
         
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",

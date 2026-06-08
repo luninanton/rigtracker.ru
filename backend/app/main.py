@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.database import Base, engine, get_db
 from backend.app.models.tender import Tender
+from backend.app.models.setting import SystemSetting
 from backend.app.api.tenders import router as tenders_router
+from backend.app.api.settings_api import router as settings_router
 
 app = FastAPI(title="Machinery Scout CRM API", version="1.0.0")
 
@@ -38,6 +40,7 @@ from backend.app.services.scraper_manager import run_scraper_and_save
 
 # Include API Routers
 app.include_router(tenders_router)
+app.include_router(settings_router)
 
 # Initialize Scheduler
 scheduler = AsyncIOScheduler()

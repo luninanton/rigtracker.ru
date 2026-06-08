@@ -63,6 +63,10 @@
                 </div>
             </div>
             <div class="flex items-center gap-4">
+                <button id="btn-settings" class="glow-indigo bg-slate-850 hover:bg-slate-800 border border-slate-850 text-slate-300 text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300">
+                    <i class="fa-solid fa-gear text-slate-400"></i>
+                    <span>Настройки</span>
+                </button>
                 <button id="btn-scrape" class="glow-indigo bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300">
                     <i class="fa-solid fa-sync-alt animate-spin-hover"></i>
                     <span>Запустить парсинг</span>
@@ -136,15 +140,6 @@
                 <!-- Machinery Type -->
                 <select id="filter-type" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
                     <option value="">Все типы спецтехники</option>
-                    <option value="Экскаватор">Экскаватор</option>
-                    <option value="Погрузчик">Погрузчик</option>
-                    <option value="Самосвал">Самосвал</option>
-                    <option value="Бульдозер">Бульдозер</option>
-                    <option value="Каток">Каток</option>
-                    <option value="JCB">JCB</option>
-                    <option value="CAT">CAT</option>
-                    <option value="Komatsu">Komatsu</option>
-                    <option value="Кран">Кран</option>
                 </select>
 
                 <!-- Platform -->
@@ -193,6 +188,68 @@
             </div>
         </section>
     </main>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+        <div class="glass-panel w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden border border-slate-800">
+            <!-- Modal Header -->
+            <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2 text-indigo-400">
+                    <i class="fa-solid fa-gear text-lg"></i>
+                    <h3 class="text-white font-bold text-base">Настройки парсера и фильтрации</h3>
+                </div>
+                <button id="btn-close-settings" type="button" class="text-slate-400 hover:text-white transition-colors">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body -->
+            <form id="settings-form" class="p-6 space-y-4">
+                <!-- Categories -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        Коды категорий ГИС Торги (через запятую)
+                    </label>
+                    <textarea id="settings-categories" rows="2" class="w-full p-3 text-sm bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 resize-none" placeholder="100001, 100002..."></textarea>
+                    <p class="text-slate-500 text-xs mt-1">
+                        Примеры: 100001 (Легковые), 100002 (Грузовые), 101 (Спецтехника), 110 (Иной транспорт), 100000 (Мото)
+                    </p>
+                </div>
+                
+                <!-- Keywords -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        Ключевые слова поиска (через запятую)
+                    </label>
+                    <textarea id="settings-keywords" rows="3" class="w-full p-3 text-sm bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 resize-none" placeholder="Экскаватор, Самосвал..."></textarea>
+                    <p class="text-slate-500 text-xs mt-1">
+                        Используются для определения типа техники в названии или описании тендера.
+                    </p>
+                </div>
+                
+                <!-- Minus Words -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        Исключающие слова (Минус-слова, через запятую)
+                    </label>
+                    <textarea id="settings-minus-words" rows="3" class="w-full p-3 text-sm bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 resize-none" placeholder="Аренда, Услуги..."></textarea>
+                    <p class="text-slate-500 text-xs mt-1">
+                        Любой лот, содержащий эти слова, будет автоматически помещен в Архив.
+                    </p>
+                </div>
+                
+                <!-- Modal Footer -->
+                <div class="pt-4 border-t border-slate-800 flex items-center justify-end gap-3">
+                    <button type="button" id="btn-cancel-settings" class="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-all">
+                        Отмена
+                    </button>
+                    <button type="submit" id="btn-save-settings" class="glow-indigo px-5 py-2 text-sm font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition-all flex items-center gap-2">
+                        <span>Сохранить настройки</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="/static/main.js"></script>
 </body>

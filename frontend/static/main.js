@@ -5,7 +5,8 @@ document.addEventListener("DOMContentLoaded", () => {
         currentTab: "active", // "active" (New/In Work/Favs) vs "archive"
         searchQuery: "",
         selectedType: "",
-        selectedPlatform: ""
+        selectedPlatform: "",
+        keywords: []
     };
 
     // DOM Elements
@@ -16,6 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterPlatform = document.getElementById("filter-platform");
     const tabActiveBtn = document.getElementById("tab-active");
     const tabArchiveBtn = document.getElementById("tab-archive");
+    
+    // Settings DOM Elements
+    const btnSettings = document.getElementById("btn-settings");
+    const settingsModal = document.getElementById("settings-modal");
+    const btnCloseSettings = document.getElementById("btn-close-settings");
+    const btnCancelSettings = document.getElementById("btn-cancel-settings");
+    const settingsForm = document.getElementById("settings-form");
+    
+    const settingsCategories = document.getElementById("settings-categories");
+    const settingsKeywords = document.getElementById("settings-keywords");
+    const settingsMinusWords = document.getElementById("settings-minus-words");
 
     // KPI count placeholders
     const statTotal = document.getElementById("stat-total");
@@ -76,6 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!res.ok) throw new Error("Failed to load tenders");
             state.tenders = await res.json();
             
+            populateFilterPlatform();
             updateKPIs();
             renderTenders();
         } catch (error) {
@@ -340,6 +353,105 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Populate Platform Dropdown dynamically
+    function populateFilterPlatform() {
+        const platforms = [...new Set(state.tenders.map(t => t.source_platform))].filter(Boolean);
+        filterPlatform.innerHTML = '<option value="">Все площадки</option>';
+        platforms.forEach(plat => {
+            const opt = document.createElement("option");
+            opt.value = plat;
+            opt.textContent = plat;
+            filterPlatform.appendChild(opt);
+        });
+        if (state.selectedPlatform && platforms.includes(state.selectedPlatform)) {
+            filterPlatform.value = state.selectedPlatform;
+        } else {
+            state.selectedPlatform = "";
+        }
+    }
+
+    // Populate Settings / Keywords
+    async function fetchSettings() {
+        try {
+            const res = await fetch("/api/settings");
+            if (!res.ok) throw new Error("Failed to load settings");
+            const data = await res.json();
+            state.keywords = data.keywords;
+            populateFilterType(state.keywords);
+            return data;
+        } catch (error) {
+            console.error("Error loading settings:", error);
+        }
+    }
+
+    function populateFilterType(keywords) {
+        const currentSelected = filterType.value;
+        filterType.innerHTML = '<option value="">Все типы спецтехники</option>';
+        keywords.forEach(kw => {
+            const opt = document.createElement("option");
+            opt.value = kw.trim();
+            opt.textContent = kw.trim();
+            filterType.appendChild(opt);
+        });
+        if (keywords.includes(currentSelected)) {
+            filterType.value = currentSelected;
+        } else {
+            state.selectedType = "";
+        }
+    }
+
+    // Settings Modal Event Listeners
+    btnSettings.addEventListener("click", async () => {
+        const data = await fetchSettings();
+        if (data) {
+            settingsCategories.value = data.categories.join(", ");
+            settingsKeywords.value = data.keywords.join(", ");
+            settingsMinusWords.value = data.minus_words.join(", ");
+            settingsModal.classList.remove("hidden");
+        } else {
+            showToast("Не удалось загрузить настройки");
+        }
+    });
+
+    const hideSettings = () => settingsModal.classList.add("hidden");
+    btnCloseSettings.addEventListener("click", hideSettings);
+    btnCancelSettings.addEventListener("click", hideSettings);
+
+    settingsForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const categories = settingsCategories.value.split(",").map(x => x.trim()).filter(Boolean);
+        const keywords = settingsKeywords.value.split(",").map(x => x.trim()).filter(Boolean);
+        const minus_words = settingsMinusWords.value.split(",").map(x => x.trim()).filter(Boolean);
+
+        const btnSave = document.getElementById("btn-save-settings");
+        btnSave.disabled = true;
+        btnSave.classList.add("opacity-60");
+
+        try {
+            const res = await fetch("/api/settings", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ categories, keywords, minus_words })
+            });
+
+            if (!res.ok) throw new Error("Failed to save settings");
+
+            showToast("Настройки успешно сохранены!");
+            hideSettings();
+            await fetchSettings();
+            await fetchTenders(); // Refresh list to reflect potential classification updates if they happen
+            
+        } catch (err) {
+            console.error(err);
+            showToast("Ошибка при сохранении настроек");
+        } finally {
+            btnSave.disabled = false;
+            btnSave.classList.remove("opacity-60");
+        }
+    });
+
     // Initial load
+    fetchSettings();
     fetchTenders();
 });
