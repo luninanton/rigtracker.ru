@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Machinery Scout CRM — Панель управления</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            glow: 'rgba(99, 102, 241, 0.15)',
+                            border: 'rgba(255, 255, 255, 0.08)'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19;
+        }
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glow-indigo:hover {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+        .glow-emerald:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col pb-12">
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white shadow-lg shadow-indigo-600/30">
+                    <i class="fa-solid fa-compass-drafting text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-400 bg-clip-text text-transparent">
+                        Machinery Scout CRM
+                    </h1>
+                    <p class="text-xs text-slate-500">Система мониторинга спецтехники</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-scrape" class="glow-indigo bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300">
+                    <i class="fa-solid fa-sync-alt animate-spin-hover"></i>
+                    <span>Запустить парсинг</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <!-- Notification Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 glass-panel border-l-4 border-indigo-500 p-4 rounded shadow-2xl flex items-center gap-3 animate-bounce">
+            <i class="fa-solid fa-circle-info text-indigo-400 text-lg"></i>
+            <span id="toast-message" class="text-sm font-medium"></span>
+        </div>
+
+        <!-- Metrics Grid -->
+        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <!-- Card 1 -->
+            <div class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg">
+                <div>
+                    <span class="text-xs text-slate-400 font-medium">Всего тендеров</span>
+                    <h3 id="stat-total" class="text-2xl font-bold mt-1 text-white">0</h3>
+                </div>
+                <div class="bg-slate-800 p-3 rounded-lg text-slate-400">
+                    <i class="fa-solid fa-database text-lg"></i>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div id="kpi-new" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-blue-500/30 transition-all">
+                <div>
+                    <span class="text-xs text-slate-400 font-medium">Новые</span>
+                    <h3 id="stat-new" class="text-2xl font-bold mt-1 text-blue-400">0</h3>
+                </div>
+                <div class="bg-blue-950/40 p-3 rounded-lg text-blue-400">
+                    <i class="fa-solid fa-sparkles text-lg"></i>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div id="kpi-progress" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-amber-500/30 transition-all">
+                <div>
+                    <span class="text-xs text-slate-400 font-medium">В работе</span>
+                    <h3 id="stat-progress" class="text-2xl font-bold mt-1 text-amber-400">0</h3>
+                </div>
+                <div class="bg-amber-950/40 p-3 rounded-lg text-amber-400">
+                    <i class="fa-solid fa-briefcase text-lg"></i>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div id="kpi-archive" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-slate-500/30 transition-all">
+                <div>
+                    <span class="text-xs text-slate-400 font-medium">В архиве</span>
+                    <h3 id="stat-archive" class="text-2xl font-bold mt-1 text-slate-500">0</h3>
+                </div>
+                <div class="bg-slate-850 p-3 rounded-lg text-slate-500">
+                    <i class="fa-solid fa-box-archive text-lg"></i>
+                </div>
+            </div>
+        </section>
+
+        <!-- Filters & Search Controls -->
+        <section class="glass-panel p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
+            <!-- Search -->
+            <div class="relative w-full md:w-80">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                <input id="search-input" type="text" placeholder="Поиск по названию/описанию..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500">
+            </div>
+
+            <!-- Select Filters -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                <!-- Machinery Type -->
+                <select id="filter-type" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
+                    <option value="">Все типы спецтехники</option>
+                    <option value="Экскаватор">Экскаватор</option>
+                    <option value="Погрузчик">Погрузчик</option>
+                    <option value="Самосвал">Самосвал</option>
+                    <option value="Бульдозер">Бульдозер</option>
+                    <option value="Каток">Каток</option>
+                    <option value="JCB">JCB</option>
+                    <option value="CAT">CAT</option>
+                    <option value="Komatsu">Komatsu</option>
+                    <option value="Кран">Кран</option>
+                </select>
+
+                <!-- Platform -->
+                <select id="filter-platform" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
+                    <option value="">Все площадки</option>
+                    <option value="Федресурс (Мок)">Федресурс (Мок)</option>
+                    <option value="Тестовая площадка">Тестовая площадка</option>
+                </select>
+                
+                <!-- Status Tab Pill selectors -->
+                <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
+                    <button id="tab-active" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-indigo-600 text-white transition-all">
+                        Активные
+                    </button>
+                    <button id="tab-archive" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-400 hover:text-white transition-all">
+                        Архив
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table Grid Container -->
+        <section class="glass-panel rounded-xl overflow-hidden shadow-2xl border border-slate-800">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-900/80 text-slate-400 text-xs font-semibold uppercase tracking-wider border-b border-slate-850">
+                            <th class="px-6 py-4">Лот / Описание</th>
+                            <th class="px-6 py-4">Тип</th>
+                            <th class="px-6 py-4 text-center">Scout Score</th>
+                            <th class="px-6 py-4">Цена (Старт / Текущая)</th>
+                            <th class="px-6 py-4">Площадка / Регион</th>
+                            <th class="px-6 py-4 text-right">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tenders-tbody" class="divide-y divide-slate-850 text-slate-300 text-sm">
+                        <!-- Tenders injected dynamically -->
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-500">
+                                <i class="fa-solid fa-spinner animate-spin text-2xl text-indigo-500 mb-2"></i>
+                                <p>Загрузка тендеров...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/main.js"></script>
+</body>
+</html>
