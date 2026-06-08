@@ -18,6 +18,8 @@ async def run_scraper_and_save(parser, db: Session) -> int:
     # 2. Load dynamic keywords and minus words
     keywords = get_setting_list(db, "keywords", settings.KEYWORDS)
     minus_words = get_setting_list(db, "minus_words", settings.MINUS_WORDS)
+    if hasattr(parser, "keywords"):
+        parser.keywords = keywords
 
     raw_lots = await parser.parse()
     new_items_count = 0

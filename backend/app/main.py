@@ -36,6 +36,7 @@ from backend.app.core.security import authenticate_user
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from backend.app.core.database import SessionLocal
 from backend.app.parsers.torgi_gov_parser import TorgiGovParser
+from backend.app.parsers.zakupki_gov_parser import ZakupkiGovParser
 from backend.app.services.scraper_manager import run_scraper_and_save
 
 # Include API Routers
@@ -51,9 +52,13 @@ async def scheduled_scraping_job():
     """
     db = SessionLocal()
     try:
-        # Run real Torgi.gov.ru Scraper
+        # 1. Run real Torgi.gov.ru Scraper
         torgi_parser = TorgiGovParser()
         await run_scraper_and_save(torgi_parser, db)
+        
+        # 2. Run real EIS Zakupki Scraper
+        zakupki_parser = ZakupkiGovParser()
+        await run_scraper_and_save(zakupki_parser, db)
     finally:
         db.close()
 
