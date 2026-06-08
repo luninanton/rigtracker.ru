@@ -30,12 +30,14 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(BASE_DIR)) # Root level of machin
 app.mount("/static", StaticFiles(directory=os.path.join(PROJECT_ROOT, "frontend/static")), name="static")
 templates = Jinja2Templates(directory=os.path.join(PROJECT_ROOT, "frontend/templates"))
 
+from backend.app.core.security import authenticate_user
+
 # Include API Routers
 app.include_router(tenders_router)
 
 @app.get("/")
-def read_dashboard(request: Request):
+def read_dashboard(request: Request, username: str = Depends(authenticate_user)):
     """
-    Renders the HTML Dashboard.
+    Renders the HTML Dashboard (protected by Basic Auth).
     """
     return templates.TemplateResponse(request=request, name="dashboard.html", context={})

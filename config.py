@@ -22,6 +22,10 @@ class Settings(BaseSettings):
         "Аренда", "Услуги", "Запчасти", "Шины", "Ремонт", "Ищу работу"
     ]
 
+    # Basic Authentication Settings
+    BASIC_AUTH_USERNAME: str = "admin"
+    BASIC_AUTH_PASSWORD: str = "scout_admin_pass"
+
     model_config = SettingsConfigDict(
         env_file=os.path.join(BASE_DIR, ".env"),
         env_file_encoding="utf-8",

@@ -8,8 +8,13 @@ from backend.app.core.database import get_db
 from backend.app.models.tender import Tender
 from backend.app.parsers.mock_parser import MockMachineryParser
 from backend.app.services.scraper_manager import run_scraper_and_save
+from backend.app.core.security import authenticate_user
 
-router = APIRouter(prefix="/api/tenders", tags=["tenders"])
+router = APIRouter(
+    prefix="/api/tenders", 
+    tags=["tenders"],
+    dependencies=[Depends(authenticate_user)]
+)
 
 # Pydantic Schemas
 class TenderResponse(BaseModel):
