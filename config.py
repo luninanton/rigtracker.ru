@@ -22,6 +22,11 @@ class Settings(BaseSettings):
         "Аренда", "Услуги", "Запчасти", "Шины", "Ремонт", "Ищу работу"
     ]
 
+    # GIS Torgi category codes to parse (default includes cars, trucks, special machinery, other transport, motor vehicles)
+    TORGI_GOV_CATEGORIES: List[str] = [
+        "100001", "100002", "101", "110", "100000"
+    ]
+
     # Basic Authentication Settings
     BASIC_AUTH_USERNAME: str = "admin"
     BASIC_AUTH_PASSWORD: str = "scout_admin_pass"

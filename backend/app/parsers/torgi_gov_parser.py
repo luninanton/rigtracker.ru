@@ -2,6 +2,7 @@ import httpx
 import logging
 from datetime import datetime
 from typing import List, Dict, Any
+from config import settings
 from backend.app.parsers.base import BaseParser
 
 logger = logging.getLogger(__name__)
@@ -17,13 +18,8 @@ class TorgiGovParser(BaseParser):
         # Torgi.gov.ru Public API search endpoint
         api_url = f"{self.base_url}/new/api/public/lotcards/search"
         
-        # We query the following categories:
-        # - 100001: Легковые автомобили (Passenger cars)
-        # - 100002: Грузовые автомобили (Trucks)
-        # - 101: Спецтехника (Special machinery)
-        # - 110: Иной транспорт (Other transport)
-        # - 100000: Мототехника (Motor vehicles)
-        categories = ["100001", "100002", "101", "110", "100000"]
+        # We query the configured categories:
+        categories = settings.TORGI_GOV_CATEGORIES
         
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
