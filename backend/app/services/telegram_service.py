@@ -1,17 +1,18 @@
 import httpx
 import logging
+from typing import Optional
 from config import settings
 
 logger = logging.getLogger(__name__)
 
 async def send_tender_notification(
     title: str,
-    machinery_type: str | None,
-    price: float | None,
+    machinery_type: Optional[str],
+    price: Optional[float],
     url: str,
     scout_score: float,
     platform: str,
-    region: str | None
+    region: Optional[str]
 ) -> bool:
     """
     Sends a formatted HTML notification card about a new tender to the Telegram Chat/Channel.
