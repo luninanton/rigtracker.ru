@@ -61,3 +61,28 @@ def set_setting_bool(db: Session, key: str, value: bool):
         setting.value = str_val
     db.commit()
 
+def get_setting_int(db: Session, key: str, default: int) -> int:
+    """
+    Retrieves an integer setting from the database. Falls back to default if not found or invalid.
+    """
+    try:
+        setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+        if not setting:
+            return default
+        return int(setting.value)
+    except Exception as e:
+        logger.warning(f"Failed to load integer setting for {key}: {e}. Falling back to default.")
+        return default
+
+def set_setting_int(db: Session, key: str, value: int):
+    """
+    Saves an integer value in the database.
+    """
+    setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+    if not setting:
+        setting = SystemSetting(key=key, value=str(value))
+        db.add(setting)
+    else:
+        setting.value = str(value)
+    db.commit()
+

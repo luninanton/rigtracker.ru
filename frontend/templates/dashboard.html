@@ -84,9 +84,9 @@
         </div>
 
         <!-- Metrics Grid -->
-        <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
             <!-- Card 1 -->
-            <div class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg">
+            <div id="kpi-total" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-indigo-500/30 transition-all">
                 <div>
                     <span class="text-xs text-slate-400 font-medium">Всего тендеров</span>
                     <h3 id="stat-total" class="text-2xl font-bold mt-1 text-white">0</h3>
@@ -115,7 +115,17 @@
                     <i class="fa-solid fa-briefcase text-lg"></i>
                 </div>
             </div>
-            <!-- Card 4 -->
+            <!-- Card 4 (Favorites) -->
+            <div id="kpi-favorite" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-yellow-500/30 transition-all">
+                <div>
+                    <span class="text-xs text-slate-400 font-medium">Избранные</span>
+                    <h3 id="stat-favorite" class="text-2xl font-bold mt-1 text-yellow-400">0</h3>
+                </div>
+                <div class="bg-yellow-950/40 p-3 rounded-lg text-yellow-400">
+                    <i class="fa-solid fa-star text-lg"></i>
+                </div>
+            </div>
+            <!-- Card 5 -->
             <div id="kpi-archive" class="glass-panel p-5 rounded-xl flex items-center justify-between shadow-lg cursor-pointer hover:border-slate-500/30 transition-all">
                 <div>
                     <span class="text-xs text-slate-400 font-medium">В архиве</span>
@@ -128,15 +138,38 @@
         </section>
 
         <!-- Filters & Search Controls -->
-        <section class="glass-panel p-4 rounded-xl mb-6 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
-            <!-- Search -->
-            <div class="relative w-full md:w-80">
-                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
-                <input id="search-input" type="text" placeholder="Поиск по названию/описанию..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500">
+        <section class="glass-panel p-4 rounded-xl mb-6 space-y-4 shadow-lg">
+            <!-- First row: Search & Status Selector -->
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full md:w-80">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i>
+                    <input id="search-input" type="text" placeholder="Поиск по названию/описанию..." class="w-full pl-10 pr-4 py-2 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-500">
+                </div>
+
+                <div class="flex items-center gap-3 w-full md:w-auto justify-end">
+                    <!-- Sorting -->
+                    <select id="sort-order" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
+                        <option value="created_desc">Сначала новые (по дате)</option>
+                        <option value="created_asc">Сначала старые (по дате)</option>
+                        <option value="price_desc">По цене (убывание)</option>
+                        <option value="price_asc">По цене (возрастание)</option>
+                        <option value="score_desc">По Scout Score (скидке)</option>
+                        <option value="date_end_asc">Ближайшее завершение</option>
+                    </select>
+
+                    <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
+                        <button id="tab-active" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-indigo-600 text-white transition-all">
+                            Активные
+                        </button>
+                        <button id="tab-archive" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-400 hover:text-white transition-all">
+                            Архив
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <!-- Select Filters -->
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <!-- Second row: Dropdowns & Price inputs -->
+            <div class="flex flex-wrap items-center gap-3 pt-3 border-t border-slate-850">
                 <!-- Machinery Type -->
                 <select id="filter-type" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
                     <option value="">Все типы спецтехники</option>
@@ -145,18 +178,19 @@
                 <!-- Platform -->
                 <select id="filter-platform" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
                     <option value="">Все площадки</option>
-                    <option value="Федресурс (Мок)">Федресурс (Мок)</option>
-                    <option value="Тестовая площадка">Тестовая площадка</option>
                 </select>
-                
-                <!-- Status Tab Pill selectors -->
-                <div class="flex bg-slate-900 p-1 rounded-lg border border-slate-800">
-                    <button id="tab-active" class="px-3 py-1.5 text-xs font-semibold rounded-md bg-indigo-600 text-white transition-all">
-                        Активные
-                    </button>
-                    <button id="tab-archive" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-400 hover:text-white transition-all">
-                        Архив
-                    </button>
+
+                <!-- Region -->
+                <select id="filter-region" class="bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block px-3 py-2">
+                    <option value="">Все регионы</option>
+                </select>
+
+                <!-- Price Range -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-slate-500">Цена (₽):</span>
+                    <input type="number" id="filter-price-min" placeholder="от" class="w-24 px-3 py-2 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600">
+                    <span class="text-slate-600 text-sm">—</span>
+                    <input type="number" id="filter-price-max" placeholder="до" class="w-28 px-3 py-2 text-sm bg-slate-900 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600">
                 </div>
             </div>
         </section>
@@ -167,8 +201,11 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-slate-900/80 text-slate-400 text-xs font-semibold uppercase tracking-wider border-b border-slate-850">
+                            <th class="px-6 py-4 w-10">
+                                <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-slate-850 text-indigo-650 focus:ring-indigo-500 bg-slate-950">
+                            </th>
                             <th class="px-6 py-4">Лот / Описание</th>
-                            <th class="px-6 py-4">Тип</th>
+                            <th class="px-6 py-4">Тип / Заметки</th>
                             <th class="px-6 py-4 text-center">Scout Score</th>
                             <th class="px-6 py-4">Цена (Старт / Текущая)</th>
                             <th class="px-6 py-4">Площадка / Регион</th>
@@ -281,25 +318,71 @@
                     </div>
                 </div>
 
-                <!-- EIS Strict Keywords -->
-                <div>
-                    <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-300 hover:text-white select-none">
-                        <input type="checkbox" id="eis-strict-keywords" class="w-4 h-4 rounded border-slate-800 text-indigo-650 focus:ring-indigo-500 bg-slate-900">
-                        <span class="font-semibold text-xs text-slate-400 uppercase tracking-wider">Строгий фильтр по ключевым словам для ЕИС</span>
-                    </label>
-                    <p class="text-slate-500 text-xs mt-1 ml-7">
-                        Если включено, тендеры ЕИС будут сохраняться только при наличии ключевых слов в названии/описании.
-                    </p>
+                <!-- EIS Strict Keywords & 223FZ Exclude -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-300 hover:text-white select-none">
+                            <input type="checkbox" id="eis-strict-keywords" class="w-4 h-4 rounded border-slate-800 text-indigo-650 focus:ring-indigo-500 bg-slate-900">
+                            <span class="font-semibold text-xs text-slate-400 uppercase tracking-wider">Строгий фильтр ЕИС</span>
+                        </label>
+                        <p class="text-slate-500 text-2xs mt-1 ml-7">
+                            Загружать только лоты ЕИС, содержащие поисковые ключевые слова.
+                        </p>
+                    </div>
+                    <div>
+                        <label class="flex items-center gap-3 cursor-pointer text-sm text-slate-300 hover:text-white select-none">
+                            <input type="checkbox" id="eis-exclude-223fz" class="w-4 h-4 rounded border-slate-800 text-indigo-650 focus:ring-indigo-500 bg-slate-900">
+                            <span class="font-semibold text-xs text-slate-400 uppercase tracking-wider">Исключить 223-ФЗ</span>
+                        </label>
+                        <p class="text-slate-500 text-2xs mt-1 ml-7">
+                            Пропускать корпоративные закупки по 223-ФЗ, забирая только 44-ФЗ.
+                        </p>
+                    </div>
                 </div>
 
-                
+                <!-- Database Retention Policies -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        Очистка и лимиты базы данных
+                    </label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950 p-4 rounded-lg border border-slate-800">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Срок хранения лотов (дней):</label>
+                            <input type="number" id="settings-retention-days" min="0" class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <span class="text-slate-600 text-2xs mt-0.5 block">0 — хранить бесконечно</span>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Макс. количество лотов в базе:</label>
+                            <input type="number" id="settings-max-limit" min="0" class="w-full px-3 py-1.5 text-xs bg-slate-900 border border-slate-800 rounded focus:outline-none focus:border-indigo-500 text-slate-200">
+                            <span class="text-slate-600 text-2xs mt-0.5 block">0 — без ограничений по размеру</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Database Manual Cleaning Actions -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                        Ручные операции с БД
+                    </label>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="button" id="btn-clear-archive" class="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-850 hover:bg-slate-800 border border-slate-800 text-red-400 hover:text-red-300 transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i>
+                            Очистить лоты в архиве
+                        </button>
+                        <button type="button" id="btn-clear-all" class="px-4 py-2 text-xs font-semibold rounded-lg bg-red-950/40 hover:bg-red-950/60 border border-red-900/30 text-red-400 hover:text-red-350 transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Стереть все лоты из БД
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Keywords -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
                         Ключевые слова поиска (через запятую)
                     </label>
                     <textarea id="settings-keywords" rows="3" class="w-full p-3 text-sm bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 resize-none" placeholder="Экскаватор, Самосвал..."></textarea>
-                    <p class="text-slate-500 text-xs mt-1">
+                    <p class="text-slate-500 text-2xs mt-1">
                         Используются для определения типа техники в названии или описании тендера.
                     </p>
                 </div>
@@ -310,7 +393,7 @@
                         Исключающие слова (Минус-слова, через запятую)
                     </label>
                     <textarea id="settings-minus-words" rows="3" class="w-full p-3 text-sm bg-slate-950 border border-slate-800 rounded-lg focus:outline-none focus:border-indigo-500 text-slate-200 placeholder-slate-600 resize-none" placeholder="Аренда, Услуги..."></textarea>
-                    <p class="text-slate-500 text-xs mt-1">
+                    <p class="text-slate-500 text-2xs mt-1">
                         Любой лот, содержащий эти слова, будет автоматически помещен в Архив.
                     </p>
                 </div>
@@ -326,6 +409,21 @@
                 </div>
             </form>
         </div>
+    </div>
+
+    <!-- Batch Actions Floating Bar -->
+    <div id="batch-actions-bar" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 backdrop-blur-md border border-slate-800 px-6 py-3.5 rounded-xl shadow-2xl flex items-center gap-4 transition-all duration-300">
+        <span class="text-xs text-slate-400 font-semibold"><span id="batch-select-count" class="text-white font-bold">0</span> лотов выбрано</span>
+        <div class="h-4 w-px bg-slate-800"></div>
+        <button id="btn-batch-work" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-900/60 hover:bg-indigo-900 border border-indigo-500/20 text-indigo-300 transition-all">
+            В работу
+        </button>
+        <button id="btn-batch-archive" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-750 border border-slate-700/50 text-slate-300 transition-all">
+            В архив
+        </button>
+        <button id="btn-batch-delete" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-950/65 hover:bg-red-900 border border-red-500/20 text-red-400 transition-all">
+            Удалить навсегда
+        </button>
     </div>
 
     <script src="/static/main.js"></script>

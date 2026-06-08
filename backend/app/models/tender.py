@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime, Boolean
 from backend.app.core.database import Base
 
 class Tender(Base):
@@ -16,6 +16,8 @@ class Tender(Base):
     machinery_type = Column(String(100), nullable=True, index=True)
     status = Column(String(50), default="Новый", index=True, nullable=False)
     scout_score = Column(Float, default=0.0)
+    is_favorite = Column(Boolean, default=False, index=True, nullable=False)
+    notes = Column(Text, nullable=True)
     date_end = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 

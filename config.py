@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     # EIS Zakupki OKPD2 codes to parse (default includes construction/mining machinery and motor vehicles)
     EIS_OKPD2_CODES: List[str] = ["28.92", "29.10"]
     EIS_STRICT_KEYWORDS: bool = True
+    EIS_EXCLUDE_223FZ: bool = False
+
+    # Database Clean-up & Retention Policy
+    RETENTION_DAYS: int = 30
+    MAX_TENDERS_LIMIT: int = 500
 
 
     # Basic Authentication Settings

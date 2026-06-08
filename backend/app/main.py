@@ -25,6 +25,29 @@ app.add_middleware(
 # Auto-create tables on startup (simple for MVP)
 Base.metadata.create_all(bind=engine)
 
+# Run simple SQLite migrations for is_favorite and notes columns if they don't exist
+from sqlalchemy import text
+with engine.connect() as conn:
+    # Check if is_favorite column exists
+    try:
+        conn.execute(text("SELECT is_favorite FROM tenders LIMIT 1"))
+    except Exception:
+        try:
+            conn.execute(text("ALTER TABLE tenders ADD COLUMN is_favorite BOOLEAN DEFAULT 0;"))
+            conn.commit()
+        except Exception:
+            pass
+
+    # Check if notes column exists
+    try:
+        conn.execute(text("SELECT notes FROM tenders LIMIT 1"))
+    except Exception:
+        try:
+            conn.execute(text("ALTER TABLE tenders ADD COLUMN notes TEXT;"))
+            conn.commit()
+        except Exception:
+            pass
+
 # Paths for static and templates
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(BASE_DIR)) # Root level of machinery_scout_crm
