@@ -31,9 +31,38 @@ app.mount("/static", StaticFiles(directory=os.path.join(PROJECT_ROOT, "frontend/
 templates = Jinja2Templates(directory=os.path.join(PROJECT_ROOT, "frontend/templates"))
 
 from backend.app.core.security import authenticate_user
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from backend.app.core.database import SessionLocal
+from backend.app.parsers.torgi_gov_parser import TorgiGovParser
+from backend.app.services.scraper_manager import run_scraper_and_save
 
 # Include API Routers
 app.include_router(tenders_router)
+
+# Initialize Scheduler
+scheduler = AsyncIOScheduler()
+
+async def scheduled_scraping_job():
+    """
+    Background job that runs scrapers and updates database automatically.
+    """
+    db = SessionLocal()
+    try:
+        # Run real Torgi.gov.ru Scraper
+        torgi_parser = TorgiGovParser()
+        await run_scraper_and_save(torgi_parser, db)
+    finally:
+        db.close()
+
+@app.on_event("startup")
+def start_scheduler():
+    # Run scraping on startup and then every 30 minutes
+    scheduler.add_job(scheduled_scraping_job, "interval", minutes=30, id="scrape_job", replace_existing=True)
+    scheduler.start()
+
+@app.on_event("shutdown")
+def stop_scheduler():
+    scheduler.shutdown()
 
 @app.get("/")
 def read_dashboard(request: Request, username: str = Depends(authenticate_user)):

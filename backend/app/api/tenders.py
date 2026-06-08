@@ -6,7 +6,7 @@ from datetime import datetime
 
 from backend.app.core.database import get_db
 from backend.app.models.tender import Tender
-from backend.app.parsers.mock_parser import MockMachineryParser
+from backend.app.parsers.torgi_gov_parser import TorgiGovParser
 from backend.app.services.scraper_manager import run_scraper_and_save
 from backend.app.core.security import authenticate_user
 
@@ -86,6 +86,6 @@ def update_tender_status(
 
 @router.post("/trigger-scrape")
 async def trigger_scrape(db: Session = Depends(get_db)):
-    parser = MockMachineryParser()
+    parser = TorgiGovParser()
     new_count = await run_scraper_and_save(parser, db)
     return {"status": "success", "new_items_added": new_count}
