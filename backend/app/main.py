@@ -11,7 +11,7 @@ from backend.app.models.setting import SystemSetting
 from backend.app.api.tenders import router as tenders_router
 from backend.app.api.settings_api import router as settings_router
 
-app = FastAPI(title="Machinery Scout CRM API", version="1.0.0")
+app = FastAPI(title="RigTracker CRM API", version="1.0.0")
 
 # Setup CORS
 app.add_middleware(
